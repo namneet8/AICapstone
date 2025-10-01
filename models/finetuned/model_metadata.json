@@ -1,0 +1,21 @@
+{
+  "class_names": [
+    "car_honk",
+    "cat",
+    "dog",
+    "police_siren"
+  ],
+  "num_classes": 4,
+  "input_dim": 1024,
+  "test_accuracy": 0.5333333611488342,
+  "test_loss": 1.0121831893920898,
+  "training_samples": 67,
+  "validation_samples": 15,
+  "test_samples": 15,
+  "per_class_accuracy": {
+    "car_honk": 0.3333333333333333,
+    "cat": 0.75,
+    "dog": 0.5,
+    "police_siren": 0.5
+  }
+}
