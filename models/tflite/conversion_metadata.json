@@ -1,0 +1,29 @@
+{
+  "original_model": "../models/finetuned/best_model.h5",
+  "tflite_models": {
+    "float32": {
+      "path": "../models/tflite/audio_classifier_float32.tflite",
+      "size_kb": 302.109375,
+      "accuracy": 0.4666666666666667,
+      "inference_time_ms": 0.06043434143066406
+    },
+    "float16": {
+      "path": "../models/tflite/audio_classifier_float16.tflite",
+      "size_kb": 598.1640625,
+      "accuracy": 0.4666666666666667,
+      "inference_time_ms": 0.02006053924560547
+    },
+    "int8": {
+      "path": "../models/tflite/audio_classifier_int8.tflite",
+      "size_kb": 302.015625,
+      "accuracy": 0.4666666666666667,
+      "inference_time_ms": 0.010199546813964844
+    }
+  },
+  "class_names": [
+    "car_honk",
+    "cat",
+    "dog",
+    "police_siren"
+  ]
+}

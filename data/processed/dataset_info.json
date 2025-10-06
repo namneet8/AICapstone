@@ -1,0 +1,133 @@
+{
+  "classes": [
+    "car_honk",
+    "cat",
+    "dog",
+    "police_siren"
+  ],
+  "files": {
+    "car_honk": [
+      "../data/processed\\car_honk\\Auto_Sound_Signal_chunk0.wav",
+      "../data/processed\\car_honk\\Auto_Sound_Signal_noisy.wav",
+      "../data/processed\\car_honk\\Auto_Sound_Signal_shifted.wav",
+      "../data/processed\\car_honk\\Auto_Sound_Signal_pitched.wav",
+      "../data/processed\\car_honk\\Car_Hoot_chunk0.wav",
+      "../data/processed\\car_honk\\Car_Hoot_noisy.wav",
+      "../data/processed\\car_honk\\Car_Hoot_shifted.wav",
+      "../data/processed\\car_honk\\Car_Hoot_pitched.wav",
+      "../data/processed\\car_honk\\Caution_Horn_chunk0.wav",
+      "../data/processed\\car_honk\\Caution_Horn_noisy.wav",
+      "../data/processed\\car_honk\\Caution_Horn_shifted.wav",
+      "../data/processed\\car_honk\\Caution_Horn_pitched.wav",
+      "../data/processed\\car_honk\\Engine_Honk_chunk0.wav",
+      "../data/processed\\car_honk\\Engine_Honk_noisy.wav",
+      "../data/processed\\car_honk\\Engine_Honk_shifted.wav",
+      "../data/processed\\car_honk\\Engine_Honk_pitched.wav",
+      "../data/processed\\car_honk\\Loud_Honk_chunk0.wav",
+      "../data/processed\\car_honk\\Loud_Honk_noisy.wav",
+      "../data/processed\\car_honk\\Loud_Honk_shifted.wav",
+      "../data/processed\\car_honk\\Loud_Honk_pitched.wav",
+      "../data/processed\\car_honk\\Vehicle_Horn_Blast_chunk0.wav",
+      "../data/processed\\car_honk\\Vehicle_Horn_Blast_noisy.wav",
+      "../data/processed\\car_honk\\Vehicle_Horn_Blast_shifted.wav",
+      "../data/processed\\car_honk\\Vehicle_Horn_Blast_pitched.wav"
+    ],
+    "cat": [
+      "../data/processed\\cat\\Cat_Call_chunk0.wav",
+      "../data/processed\\cat\\Cat_Call_noisy.wav",
+      "../data/processed\\cat\\Cat_Call_shifted.wav",
+      "../data/processed\\cat\\Cat_Call_pitched.wav",
+      "../data/processed\\cat\\Furball_Sound_chunk0.wav",
+      "../data/processed\\cat\\Furball_Sound_noisy.wav",
+      "../data/processed\\cat\\Furball_Sound_shifted.wav",
+      "../data/processed\\cat\\Furball_Sound_pitched.wav",
+      "../data/processed\\cat\\Meow-sic_chunk0.wav",
+      "../data/processed\\cat\\Meow-sic_noisy.wav",
+      "../data/processed\\cat\\Meow-sic_shifted.wav",
+      "../data/processed\\cat\\Meow-sic_pitched.wav",
+      "../data/processed\\cat\\Pawsitive_Plea_chunk0.wav",
+      "../data/processed\\cat\\Pawsitive_Plea_noisy.wav",
+      "../data/processed\\cat\\Pawsitive_Plea_shifted.wav",
+      "../data/processed\\cat\\Pawsitive_Plea_pitched.wav",
+      "../data/processed\\cat\\Paw_Patrol_Yowl_chunk0.wav",
+      "../data/processed\\cat\\Paw_Patrol_Yowl_noisy.wav",
+      "../data/processed\\cat\\Paw_Patrol_Yowl_shifted.wav",
+      "../data/processed\\cat\\Paw_Patrol_Yowl_pitched.wav",
+      "../data/processed\\cat\\Purrs_And_Meows_chunk0.wav",
+      "../data/processed\\cat\\Purrs_And_Meows_noisy.wav",
+      "../data/processed\\cat\\Purrs_And_Meows_shifted.wav",
+      "../data/processed\\cat\\Purrs_And_Meows_pitched.wav"
+    ],
+    "dog": [
+      "../data/processed\\dog\\Canine_Alert_chunk0.wav",
+      "../data/processed\\dog\\Canine_Alert_noisy.wav",
+      "../data/processed\\dog\\Canine_Alert_shifted.wav",
+      "../data/processed\\dog\\Canine_Alert_pitched.wav",
+      "../data/processed\\dog\\Doggie_Woof_chunk0.wav",
+      "../data/processed\\dog\\Doggie_Woof_chunk1.wav",
+      "../data/processed\\dog\\Doggie_Woof_noisy.wav",
+      "../data/processed\\dog\\Doggie_Woof_shifted.wav",
+      "../data/processed\\dog\\Doggie_Woof_pitched.wav",
+      "../data/processed\\dog\\Fido's_Bark_chunk0.wav",
+      "../data/processed\\dog\\Fido's_Bark_noisy.wav",
+      "../data/processed\\dog\\Fido's_Bark_shifted.wav",
+      "../data/processed\\dog\\Fido's_Bark_pitched.wav",
+      "../data/processed\\dog\\Hound_Baying_chunk0.wav",
+      "../data/processed\\dog\\Hound_Baying_noisy.wav",
+      "../data/processed\\dog\\Hound_Baying_shifted.wav",
+      "../data/processed\\dog\\Hound_Baying_pitched.wav",
+      "../data/processed\\dog\\Pup's_Yowl_chunk0.wav",
+      "../data/processed\\dog\\Pup's_Yowl_noisy.wav",
+      "../data/processed\\dog\\Pup's_Yowl_shifted.wav",
+      "../data/processed\\dog\\Pup's_Yowl_pitched.wav",
+      "../data/processed\\dog\\Yelp_Sound_chunk0.wav",
+      "../data/processed\\dog\\Yelp_Sound_noisy.wav",
+      "../data/processed\\dog\\Yelp_Sound_shifted.wav",
+      "../data/processed\\dog\\Yelp_Sound_pitched.wav"
+    ],
+    "police_siren": [
+      "../data/processed\\police_siren\\Cop_Sound_chunk0.wav",
+      "../data/processed\\police_siren\\Cop_Sound_noisy.wav",
+      "../data/processed\\police_siren\\Cop_Sound_shifted.wav",
+      "../data/processed\\police_siren\\Cop_Sound_pitched.wav",
+      "../data/processed\\police_siren\\Law_Enforcement_Call_chunk0.wav",
+      "../data/processed\\police_siren\\Law_Enforcement_Call_noisy.wav",
+      "../data/processed\\police_siren\\Law_Enforcement_Call_shifted.wav",
+      "../data/processed\\police_siren\\Law_Enforcement_Call_pitched.wav",
+      "../data/processed\\police_siren\\Police_Alert_chunk0.wav",
+      "../data/processed\\police_siren\\Police_Alert_noisy.wav",
+      "../data/processed\\police_siren\\Police_Alert_shifted.wav",
+      "../data/processed\\police_siren\\Police_Alert_pitched.wav",
+      "../data/processed\\police_siren\\Police_Call_chunk0.wav",
+      "../data/processed\\police_siren\\Police_Call_noisy.wav",
+      "../data/processed\\police_siren\\Police_Call_shifted.wav",
+      "../data/processed\\police_siren\\Police_Call_pitched.wav",
+      "../data/processed\\police_siren\\Security_Vehicle_Siren_chunk0.wav",
+      "../data/processed\\police_siren\\Security_Vehicle_Siren_noisy.wav",
+      "../data/processed\\police_siren\\Security_Vehicle_Siren_shifted.wav",
+      "../data/processed\\police_siren\\Security_Vehicle_Siren_pitched.wav",
+      "../data/processed\\police_siren\\Vigilante_Siren_chunk0.wav",
+      "../data/processed\\police_siren\\Vigilante_Siren_noisy.wav",
+      "../data/processed\\police_siren\\Vigilante_Siren_shifted.wav",
+      "../data/processed\\police_siren\\Vigilante_Siren_pitched.wav"
+    ]
+  },
+  "statistics": {
+    "car_honk": {
+      "original_files": 6,
+      "processed_files": 24
+    },
+    "cat": {
+      "original_files": 6,
+      "processed_files": 24
+    },
+    "dog": {
+      "original_files": 6,
+      "processed_files": 25
+    },
+    "police_siren": {
+      "original_files": 6,
+      "processed_files": 24
+    }
+  }
+}
