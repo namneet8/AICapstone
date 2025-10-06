@@ -1,0 +1,30 @@
+{
+  "original_model": "E:\\yamnet\\models\\finetuned\\best_model.h5",
+  "tflite_models": {
+    "float32": {
+      "path": "E:\\yamnet\\models\\tflite\\audio_classifier_float32.tflite",
+      "size_kb": 1189.98828125,
+      "accuracy": 0.9092558983666061,
+      "time_ms": 0.020077228546142578
+    },
+    "float16": {
+      "path": "E:\\yamnet\\models\\tflite\\audio_classifier_float16.tflite",
+      "size_kb": 597.96484375,
+      "accuracy": 0.9092558983666061,
+      "time_ms": 0.009992122650146484
+    },
+    "int8": {
+      "path": "E:\\yamnet\\models\\tflite\\audio_classifier_int8.tflite",
+      "size_kb": 301.875,
+      "accuracy": 0.9092558983666061,
+      "time_ms": 0.01046895980834961
+    }
+  },
+  "class_names": [
+    "Alarm clock",
+    "Explosion",
+    "Gunshot, gunfire",
+    "Siren",
+    "Vehicle horn, car horn, honking"
+  ]
+}
