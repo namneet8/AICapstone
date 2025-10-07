@@ -17,7 +17,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, confusion_matrix
 from sklearn.model_selection import train_test_split
+from pathlib import Path
 
+print(list((Path("E:/yamnet/models/finetuned")).glob("*.h5")))
 
 def main():
     print("\n============================================================")
@@ -25,11 +27,18 @@ def main():
     print("============================================================")
 
     # Define paths
-    model_path = os.path.join("models", "finetuned", "best_model.h5")
-    metadata_path = os.path.join("models", "finetuned", "model_metadata.json")
-    embeddings_path = os.path.join("data", "embeddings", "embeddings.npy")
-    labels_path = os.path.join("data", "embeddings", "labels.npy")
+    model_path = Path(__file__).resolve().parent.parent / "models" / "finetuned" / "final_model.h5"
+    # model_path = os.path.join("models", "finetuned", "final_model.h5")
+    metadata_path = Path(__file__).resolve().parent.parent / "models" / "finetuned" / "model_metadata.json"
+    # metadata_path = os.path.join("models", "finetuned", "model_metadata.json")
+    embeddings_path = Path(__file__).resolve().parent.parent / "data" / "embeddings" / "embeddings.npy"
+    # embeddings_path = os.path.join("data", "embeddings", "embeddings.npy")
+    labels_path = Path(__file__).resolve().parent.parent / "data" / "embeddings" / "labels.npy"
+    # labels_path = os.path.join("data", "embeddings", "labels.npy")
 
+    if not model_path.exists():
+        raise FileNotFoundError(f"❌ Model file not found at: {model_path}")
+    
     # Load model and data
     print("\nLoading model and data...")
     model = tf.keras.models.load_model(model_path)

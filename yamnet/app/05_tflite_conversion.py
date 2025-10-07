@@ -7,7 +7,6 @@ This script converts a trained Keras model into multiple TFLite formats:
  - Int8 (quantized with representative dataset)
 and evaluates their size, accuracy, and inference speed.
 
-Author: [Your Name]
 """
 
 import tensorflow as tf
