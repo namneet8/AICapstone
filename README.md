@@ -1,9 +1,7 @@
 <img width="1295" height="974" alt="image" src="https://github.com/user-attachments/assets/36d712f6-b0cb-4524-941a-e119c7dec920" />
+<br><br>
+<img width="1609" height="839" alt="image" src="https://github.com/user-attachments/assets/ef814775-ccfa-4e47-a69e-f1397d891fa4" />
+<br><br>
 
-
-
-
-
-# **Android - MVVM Diagram**
-
+<h2 align="center">Android - MVVM Diagram</h1>
 <img width="3715" height="1468" alt="MVVM_diagram" src="https://github.com/user-attachments/assets/d252ef1d-a4b3-49f6-bcfd-564b61bf5e9b" />
