@@ -1,0 +1,8 @@
+Approach 1: Using YAMNet as a Fixed Feature Extractor
+Detailed Technical Explanation
+
+Prepare the Data: Convert the ~750 WAV files into a suitable input format for YAMNet. This involves resampling audio to 16 kHz mono, normalizing, and splitting into 0.96-second frames (YAMNet's input window). Apply data augmentation techniques like time shifting, noise addition, or pitch scaling to artificially expand the small dataset.
+Load Pre-trained YAMNet: Use the TensorFlow Hub or official repository to load YAMNet with pre-trained weights. Freeze all layers to prevent updates during training.
+Extract Embeddings: Pass each audio frame through YAMNet to obtain 1024-dimensional embeddings from the penultimate layer (before the classification head). Aggregate embeddings if needed (e.g., average pooling over multiple frames for longer clips).
+Build and Train Classifier: Use the embeddings as input features to train a simple classifier, such as a single Dense layer with softmax activation (for neural network), SVM, or Random Forest. Split data into train/validation/test sets (e.g., 70/15/15). Train using cross-entropy loss or equivalent, with early stopping to monitor validation accuracy.
+Optimize for Mobile: Convert the combined model (YAMNet + classifier) to TensorFlow Lite (TFLite) format, applying quantization (e.g., int8) to reduce size and latency. Test inference on mobile devices using TFLite runtime.
