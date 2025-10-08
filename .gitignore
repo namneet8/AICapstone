@@ -1,14 +1,10 @@
-# Python
-__pycache__/
-*.pyc
+# Ignore everything
+*
 
-# Virtual environments
+# Except this folder
+!Data_Preprocessing_notebooks/
+
+# Ignore Git itself and your virtual env
+.git/
 venv311/
-.env
-.venv/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Others
-*.log
