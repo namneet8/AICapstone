@@ -57,11 +57,11 @@ class NameetTrainedModel @Inject constructor(
                 processedAudio.forEach { inputBuffer.putFloat(it) }
                 inputBuffer.rewind()
 
-                // Prepare outputs - use ByteBuffers for scalars
+                // Prepare outputs
                 val outputConfidence = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
                 val outputClassId = ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder())
                 val outputClassName = ByteBuffer.allocateDirect(256).order(ByteOrder.nativeOrder())
-                val outputProbabilities = Array(1) { FloatArray(5) }
+                val outputProbabilities = FloatArray(5)
 
                 val outputs = mapOf(
                     0 to outputConfidence,
@@ -73,8 +73,8 @@ class NameetTrainedModel @Inject constructor(
                 // Run inference
                 interpreter.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
 
-                // Extract probabilities (the only output we need)
-                val probabilities = outputProbabilities[0]
+                // Extract probabilities
+                val probabilities = outputProbabilities
                 val classId = probabilities.indexOfMax()
                 val confidence = probabilities[classId]
                 val labelName = labels.getOrNull(classId) ?: "Unknown"

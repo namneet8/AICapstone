@@ -37,6 +37,9 @@ class ListeningViewModel @Inject constructor(
     private val _isEmergencyAlert = MutableStateFlow(false)
     val isEmergencyAlert: StateFlow<Boolean> = _isEmergencyAlert.asStateFlow()
 
+    private val _emergencySound = MutableStateFlow<SoundDetectionResult?>(null)
+    val emergencySound: StateFlow<SoundDetectionResult?> = _emergencySound.asStateFlow()
+
     init {
         // Listen to audio data from recorder
         viewModelScope.launch {
@@ -69,6 +72,7 @@ class ListeningViewModel @Inject constructor(
     }
 
     // Process audio chunk with sound classifier
+    // Process audio chunk with sound classifier
     private suspend fun processAudioChunk(audioChunk: FloatArray) {
         try {
             val result = soundClassifier.classifySound(audioChunk)
@@ -77,9 +81,6 @@ class ListeningViewModel @Inject constructor(
             // Check if emergency sound detected
             if (soundClassifier.isEmergencySound(result.label)) {
                 handleEmergencySound(result)
-            } else {
-                // Reset alert if not emergency
-                _isEmergencyAlert.value = false
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -88,7 +89,8 @@ class ListeningViewModel @Inject constructor(
 
     // Handle emergency sound detection
     private fun handleEmergencySound(result: SoundDetectionResult) {
-        android.util.Log.e("ListeningViewModel", "🚨 EMERGENCY: ${result.label} (${result.confidence * 100}%)")
+        android.util.Log.e("ListeningViewModel", "DETECTED EMERGENCY: ${result.label} (${result.confidence * 100}%)")
+        _emergencySound.value = result
 
         // Trigger red flashing alert
         _isEmergencyAlert.value = true

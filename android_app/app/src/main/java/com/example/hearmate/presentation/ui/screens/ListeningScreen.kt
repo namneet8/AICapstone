@@ -4,21 +4,30 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTimeFilled
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.hearmate.core.audio.SoundDetectionResult
 import com.example.hearmate.presentation.viewmodel.ListeningViewModel
+import kotlinx.coroutines.delay
 
 
 private fun formatTimestamp(timestamp: Long): String {
     val dateFormat = java.text.SimpleDateFormat("MMM dd, HH:mm:ss", java.util.Locale.getDefault())
     return dateFormat.format(java.util.Date(timestamp))
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListeningScreen(
     viewModel: ListeningViewModel,
@@ -29,99 +38,167 @@ fun ListeningScreen(
     val isRecording by viewModel.isListening.collectAsState()
     val isCapturing by viewModel.isThresholdTriggered.collectAsState()
     val isEmergencyAlert by viewModel.isEmergencyAlert.collectAsState()
+    val emergencySound by viewModel.emergencySound.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Main content
-        Column(
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("HearMate") },
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
+    ) { padding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(padding)
         ) {
-            // Status indicator
-            StatusIndicator(
-                isListening = isRecording,
-                isRecording = isCapturing
-            )
+            // Main content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Status indicator with modern design
+                ModernStatusIndicator(
+                    isListening = isRecording,
+                    isRecording = isCapturing
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(48.dp))
 
-            // Last detected sound card
-            lastSound?.let {
-                SoundInfoCard(it)
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // Control buttons
-            Row {
-                Button(
-                    onClick = { viewModel.startListening() },
-                    enabled = !isRecording
-                ) {
-                    Text("Start")
+                // Last detected sound card
+                lastSound?.let {
+                    ModernSoundInfoCard(it)
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Button(
-                    onClick = { viewModel.stopListening() },
-                    enabled = isRecording
+                // Modern control buttons
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("Stop")
+                    FilledTonalButton(
+                        onClick = { viewModel.startListening() },
+                        enabled = !isRecording,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text(
+                            "Start",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+
+                    FilledTonalButton(
+                        onClick = { viewModel.stopListening() },
+                        enabled = isRecording,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    ) {
+                        Text(
+                            "Stop",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = onSettingsClick) {
-                Text("Settings")
+            // Emergency alert overlay with auto-dismiss
+            if (isEmergencyAlert) {
+                EmergencyAlertOverlay(
+                    detectedSound = emergencySound,
+                    onAutoDismiss = { viewModel.dismissEmergencyAlert() }
+                )
             }
-        }
-
-        // Emergency alert overlay
-        if (isEmergencyAlert) {
-            EmergencyAlertOverlay(
-                onDismiss = { viewModel.dismissEmergencyAlert() }
-            )
         }
     }
 }
 
 @Composable
-private fun StatusIndicator(
+private fun ModernStatusIndicator(
     isListening: Boolean,
     isRecording: Boolean
 ) {
-    // Determine status text and color
     val statusText = when {
-        !isListening -> "Not Listening"
-        isRecording -> "Recording" // Above threshold, capturing 2 seconds
-        else -> "Listening" // Below threshold, monitoring
+        !isListening -> "Paused"
+        isRecording -> "Recording Sound"
+        else -> "Monitoring"
     }
 
     val statusColor = when {
-        !isListening -> MaterialTheme.colorScheme.onSurface
-        isRecording -> Color(0xFFE53935) // Red = recording
-        else -> Color(0xFF43A047) // Green = listening/monitoring
+        !isListening -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        isRecording -> Color(0xFFE53935)
+        else -> Color(0xFF43A047)
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+    // Pulsing animation for the indicator
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        // Colored dot indicator
-        if (isListening) {
+        // Large circular indicator
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(160.dp)
+                .shadow(
+                    elevation = if (isListening) 12.dp else 4.dp,
+                    shape = CircleShape,
+                    ambientColor = statusColor.copy(alpha = 0.3f),
+                    spotColor = statusColor.copy(alpha = 0.3f)
+                )
+                .clip(CircleShape)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            statusColor.copy(alpha = 0.3f),
+                            statusColor.copy(alpha = 0.1f)
+                        )
+                    )
+                )
+        ) {
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(if (isListening && isRecording) 80.dp * scale else 80.dp)
                     .clip(CircleShape)
                     .background(statusColor)
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
 
-        // Status text
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = statusText,
             style = MaterialTheme.typography.headlineMedium,
@@ -131,83 +208,181 @@ private fun StatusIndicator(
 }
 
 @Composable
-private fun SoundInfoCard(sound: SoundDetectionResult) {
+private fun ModernSoundInfoCard(sound: SoundDetectionResult) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(20.dp)
+            ),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Detected: ${sound.label}",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = sound.label,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
 
-            Text(
-                text = "Confidence: ${"%.1f".format(sound.confidence * 100)}%",
-                style = MaterialTheme.typography.bodyMedium
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                ) {
+                    Text(
+                        text = "${"%.0f".format(sound.confidence * 100)}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
             )
 
-            Text(
-                text = "At Time: ${formatTimestamp(sound.timestamp)}",
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccessTimeFilled,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = formatTimestamp(sound.timestamp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun EmergencyAlertOverlay(
-    onDismiss: () -> Unit
+    detectedSound: SoundDetectionResult?,
+    onAutoDismiss: () -> Unit
 ) {
-    // Infinite flashing animation
-    val infiniteTransition = rememberInfiniteTransition(label = "emergency_flash")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.9f,
+    // Subtle pulse animation
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
+            animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "alpha_flash"
+        label = "scale_pulse"
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Red.copy(alpha = alpha)),
+            .background(Color.Black.copy(alpha = 0.85f)),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Card(
+            modifier = Modifier
+                .padding(32.dp)
+                .fillMaxWidth()
+                .shadow(24.dp, RoundedCornerShape(32.dp)),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
         ) {
-            Text(
-                text = "🚨",
-                style = MaterialTheme.typography.displayLarge,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "EMERGENCY SOUND DETECTED",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Red
-                )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(40.dp)
             ) {
-                Text("DISMISS")
+                // Warning icon with pulse animation
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(120.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp * scale)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFEBEE)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "⚠️",
+                            style = MaterialTheme.typography.displayLarge,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = "Emergency Detected",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF212121)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                detectedSound?.let {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFFE53935).copy(alpha = 0.1f),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = it.label,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color(0xFFE53935),
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Stay alert and check your surroundings",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF757575)
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Dismiss button
+                FilledTonalButton(
+                    onClick = onAutoDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = Color(0xFFE53935),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        "Dismiss",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
-
 }
