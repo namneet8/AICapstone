@@ -2,3 +2,7 @@
 venv311/
 Yamnet_transfer_learning/venv311
 Yamnet_transfer_learning/data
+Yamnet_transfer_learning/models
+Yamnet_transfer_learning/results
+android_app/.gradle/*
+
