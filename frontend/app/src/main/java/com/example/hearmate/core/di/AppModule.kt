@@ -25,7 +25,7 @@ object AppModule {
         ERIC_TRAINED
     }
 
-    private val SELECTED_MODEL = ModelType.YAMNET  // model selected
+    private val SELECTED_MODEL = ModelType.NAMEET_TRAINED  // model selected
 
     @Provides
     @Singleton

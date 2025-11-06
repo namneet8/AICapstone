@@ -12,6 +12,7 @@
 
     <!-- Wake lock for background listening -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".HearMateApplication"
