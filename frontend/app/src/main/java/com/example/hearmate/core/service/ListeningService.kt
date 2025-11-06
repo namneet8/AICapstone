@@ -2,6 +2,7 @@ package com.example.hearmate.core.service
 
 import android.Manifest
 import android.R
+import com.example.hearmate.core.audio.SoundDetectionResult
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -25,10 +26,13 @@ class ListeningService : Service() {
 
     @Inject
     lateinit var audioRecorderManager: AudioRecorderManager
+
     @Inject
     lateinit var soundClassifier: SoundClassifier
+
     private val _isListening = MutableStateFlow(false)
     val isListening: StateFlow<Boolean> = _isListening.asStateFlow()
+
     private val _lastDetectedSound = MutableStateFlow<SoundDetectionResult?>(null)
     val lastDetectedSound: StateFlow<SoundDetectionResult?> = _lastDetectedSound.asStateFlow()
 
@@ -70,7 +74,7 @@ class ListeningService : Service() {
         return NotificationCompat.Builder(this, "listening_channel")
             .setContentTitle("HearMate")
             .setContentText("Listening for sounds...")
-            .setSmallIcon(R.drawable.ic_media_play) // Usa icona sistema
+            .setSmallIcon(R.drawable.ic_media_play)
             .build()
     }
 
@@ -83,9 +87,3 @@ class ListeningService : Service() {
         fun getService(): ListeningService = this@ListeningService
     }
 }
-
-data class SoundDetectionResult(
-    val soundType: String,
-    val confidence: Float,
-    val timestamp: Long
-)

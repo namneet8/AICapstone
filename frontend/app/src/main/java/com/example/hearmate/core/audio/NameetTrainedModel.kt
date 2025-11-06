@@ -18,7 +18,7 @@ class NameetTrainedModel @Inject constructor(
 ) : SoundClassifier {
 
     companion object {
-        private const val MODEL_PATH = "nameet_trained_model.tflite"
+        private const val MODEL_PATH = "namneet_model.tflite"
         private const val EXPECTED_SAMPLE_SIZE = 15360
 
         private val EMERGENCY_KEYWORDS = listOf(
@@ -40,7 +40,7 @@ class NameetTrainedModel @Inject constructor(
 
                 android.util.Log.d("YAMNet", "Audio size: ${audioData.size}")
 
-                // Prepare input
+                // Prepara input buffer (float = 4 byte)
                 val inputBuffer = ByteBuffer.allocateDirect(EXPECTED_SAMPLE_SIZE * 4)
                     .order(ByteOrder.nativeOrder())
 
@@ -57,24 +57,15 @@ class NameetTrainedModel @Inject constructor(
                 processedAudio.forEach { inputBuffer.putFloat(it) }
                 inputBuffer.rewind()
 
-                // Prepare outputs
-                val outputConfidence = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
-                val outputClassId = ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder())
-                val outputClassName = ByteBuffer.allocateDirect(256).order(ByteOrder.nativeOrder())
-                val outputProbabilities = FloatArray(5)
+                // Prepara output: array di 1 elemento che contiene un FloatArray di dimensione 5
+                val outputProbabilities = Array(1) { FloatArray(5) }
+                val outputs = mapOf<Int, Any>(0 to outputProbabilities)
 
-                val outputs = mapOf(
-                    0 to outputConfidence,
-                    1 to outputClassId,
-                    2 to outputClassName,
-                    3 to outputProbabilities
-                )
-
-                // Run inference
+                // Esegui inferenza
                 interpreter.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
 
-                // Extract probabilities
-                val probabilities = outputProbabilities
+                // Estrai i risultati dal primo (e unico) array
+                val probabilities = outputProbabilities[0]
                 val classId = probabilities.indexOfMax()
                 val confidence = probabilities[classId]
                 val labelName = labels.getOrNull(classId) ?: "Unknown"
@@ -133,6 +124,10 @@ class NameetTrainedModel @Inject constructor(
     }
 
     fun close() {
-        interpreter.close()
+        try {
+            interpreter.close()
+        } catch (e: Exception) {
+            android.util.Log.w("YAMNet", "Error closing interpreter: ${e.message}")
+        }
     }
 }
