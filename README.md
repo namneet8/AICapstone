@@ -38,6 +38,7 @@
 <img width="3715" height="1468" alt="MVVM_diagram" src="https://github.com/user-attachments/assets/d252ef1d-a4b3-49f6-bcfd-564b61bf5e9b" />
 
 <h2 align="center">Backend Architecture</h1>
-<img width="793" height="829" alt="image" src="https://github.com/user-attachments/assets/365fd5c3-8e6b-4b02-87ee-2eeb8801300e" />
+<img width="1809" height="1492" alt="mermaid-diagram-2025-11-12-150521" src="https://github.com/user-attachments/assets/cb1c8045-b219-4ce2-8d03-9bd185b318ef" />
+
 
 
