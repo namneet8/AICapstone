@@ -6,6 +6,8 @@ import android.content.Context
 import com.example.hearmate.core.audio.MockSoundClassifier
 import com.example.hearmate.core.audio.SoundClassifier
 import com.example.hearmate.core.audio.YamnetSoundClassifier
+import VineetTrainedModel
+import MattiaTrainedModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,10 +24,13 @@ object AppModule {
         MOCK,
         YAMNET,
         NAMEET_TRAINED,
-        ERIC_TRAINED
+        ERIC_TRAINED,
+        VINEET_TRAINED,
+
+        MATTIA_TRAINED
     }
 
-    private val SELECTED_MODEL = ModelType.NAMEET_TRAINED  // model selected
+    private val SELECTED_MODEL = ModelType.MATTIA_TRAINED  // model selected
 
     @Provides
     @Singleton
@@ -37,6 +42,9 @@ object AppModule {
             ModelType.YAMNET -> YamnetSoundClassifier(context)
             ModelType.NAMEET_TRAINED -> NameetTrainedModel(context)
             ModelType.MOCK -> MockSoundClassifier()
+            ModelType.VINEET_TRAINED -> VineetTrainedModel(context)
+            ModelType.MATTIA_TRAINED -> MattiaTrainedModel(context)
+
         }
     }
 }

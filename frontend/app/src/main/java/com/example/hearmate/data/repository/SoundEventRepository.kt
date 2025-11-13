@@ -85,19 +85,15 @@ class SoundEventRepository @Inject constructor(
      * Sync unsynced events to MongoDB
      * @return Pair of (successCount, failureCount). Returns (-1, -1) on network error
      */
-    suspend fun syncToMongoDB(): Pair<Int, Int> {
-        return try {
-            // Get all unsynced events
-            val unsyncedEvents = soundEventDao.getUnsyncedEvents()
+    suspend fun syncToMongoDB(): Pair<Int, Int> = try {
+        val unsyncedEvents = soundEventDao.getUnsyncedEvents()
 
-            if (unsyncedEvents.isEmpty()) {
-                Log.d(TAG, "No events to sync")
-                return Pair(0, 0)
-            }
-
+        if (unsyncedEvents.isEmpty()) {
+            Log.d(TAG, "No events to sync")
+            Pair(0, 0)  // ✅ ora non c’è return interno
+        } else {
             Log.d(TAG, "Syncing ${unsyncedEvents.size} events to MongoDB")
 
-            // Convert to DTOs
             val dtos = unsyncedEvents.map { entity ->
                 SoundEventDto(
                     label = entity.label,
@@ -109,34 +105,21 @@ class SoundEventRepository @Inject constructor(
                 )
             }
 
-            // Upload to MongoDB
-            val request = SoundEventUploadRequest(events = dtos)
-            val response = apiService.uploadEvents(request)
+            val response = apiService.uploadEvents(SoundEventUploadRequest(events = dtos))
 
-            if (response.isSuccessful && response.body() != null) {
-                val body = response.body()!!
-
-                if (body.success) {
-                    // Mark as synced
-                    val eventIds = unsyncedEvents.map { it.id }
-                    soundEventDao.markAsSynced(eventIds)
-
-                    Log.d(TAG, "Successfully synced ${body.uploadedCount} events")
-                    return Pair(body.uploadedCount, body.failedCount)
-                } else {
-                    Log.e(TAG, "Sync failed: ${body.message}")
-                    return Pair(0, unsyncedEvents.size)
-                }
+            if (response.isSuccessful && response.body()?.success == true) {
+                soundEventDao.markAsSynced(unsyncedEvents.map { it.id })
+                Pair(response.body()!!.uploadedCount, response.body()!!.failedCount)
             } else {
-                Log.e(TAG, "API request failed: ${response.code()} - ${response.message()}")
-                return Pair(0, unsyncedEvents.size)
+                Log.e(TAG, "Sync failed")
+                Pair(0, unsyncedEvents.size)
             }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Network error during sync: ${e.message}", e)
-            return Pair(-1, -1) // Network error indicator
         }
+    } catch (e: Exception) {
+        Log.e(TAG, "Network error during sync: ${e.message}", e)
+        Pair(-1, -1)
     }
+
 
     /**
      * Delete synced events to free up space

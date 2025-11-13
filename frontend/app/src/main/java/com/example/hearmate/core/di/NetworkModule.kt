@@ -27,7 +27,7 @@ object NetworkModule {
      * - Local testing: "http://10.0.2.2:3000/" (Android emulator)
      * - Production: "https://your-api-url.com/"
      */
-    private const val BASE_URL = "https://caulicolous-juniper-reclaimable.ngrok-free.dev"  // Default for Android emulator
+    private const val BASE_URL = "http://hearmate-server-env.eba-nbzwmvqm.us-east-2.elasticbeanstalk.com/"
 
     /**
      * Provides OkHttpClient with logging interceptor
