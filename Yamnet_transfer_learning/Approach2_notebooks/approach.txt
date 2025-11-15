@@ -1,9 +1,0 @@
-Approach 2: Fine-Tuning the Entire YAMNet Model
-Detailed Technical Explanation
-
-Prepare the Data: Same as Approach 1: resample, normalize, frame audio, and augment the dataset to combat small size.
-Modify YAMNet Architecture: Load pre-trained YAMNet, remove the original 521-class head, and replace it with a new head (e.g., Dense layer with 5 outputs and softmax).
-Unfreeze All Layers: Set all layers to trainable, allowing gradients to flow through the entire network.
-Train End-to-End: Use a low learning rate (e.g., 1e-5) with an optimizer like Adam. Train on the dataset with cross-entropy loss, monitoring for overfitting via validation set and techniques like learning rate scheduling or weight decay. Use batch sizes of 16-32, training for 10-50 epochs.
-Optimize for Mobile: Apply TFLite conversion with quantization, pruning, or clustering to maintain efficiency. Test for latency spikes on devices.
-Deployment: Similar to Approach 1, but ensure the fine-tuned model doesn't increase inference overhead.

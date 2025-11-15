@@ -1,8 +1,0 @@
-Detailed Technical Explanation
-
-Prepare the Data: Identical to previous approaches, with emphasis on augmentation.
-Modify Architecture: Replace the classification head as in Approach 2.
-Initial Training Phase: Freeze all base layers, train only the new head (like Approach 1) for 5-10 epochs.
-Progressive Unfreezing: Gradually unfreeze layers from the top (e.g., last 2-3 convolutional blocks first), retraining with decreasing learning rates (e.g., start at 1e-4, reduce to 1e-6). Monitor validation metrics; unfreeze more if improving.
-Full Fine-Tuning: Optionally, unfreeze all layers in the final phase with very low LR and regularization.
-Optimize and Deploy: Convert to TFLite with optimizations; deploy as before.
