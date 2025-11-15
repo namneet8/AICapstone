@@ -1,7 +1,6 @@
 import android.content.Context
 import com.example.hearmate.core.audio.SoundClassifier
 import com.example.hearmate.core.audio.SoundDetectionResult
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.tensorflow.lite.support.audio.TensorAudio

@@ -1,0 +1,25 @@
+{
+  "model_name": "SVM",
+  "test_f1_score": 0.8754,
+  "classes": [
+    "Alarm_Clock",
+    "Car_Horn",
+    "Glass_Breaking",
+    "Gunshot",
+    "Siren"
+  ],
+  "sample_rate": 16000,
+  "input_length": 15360,
+  "duration_seconds": 0.96,
+  "confidence_threshold": 0.8,
+  "min_consecutive_detections": 3,
+  "input_shape": [
+    1,
+    15360
+  ],
+  "output_shape": [
+    1,
+    5
+  ],
+  "description": "Audio event detection model for mobile deployment"
+}

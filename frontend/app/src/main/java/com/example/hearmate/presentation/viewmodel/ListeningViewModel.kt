@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.hearmate.core.audio.AudioRecorderManager
 import com.example.hearmate.core.audio.SoundClassifier
 import com.example.hearmate.core.audio.SoundDetectionResult
+import com.example.hearmate.data.repository.SoundEventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import kotlin.math.sqrt
 @HiltViewModel
 class ListeningViewModel @Inject constructor(
     private val audioRecorderManager: AudioRecorderManager,
-    private val soundClassifier: SoundClassifier
+    private val soundClassifier: SoundClassifier,
+    val repository: SoundEventRepository  // Exposed for SettingsScreen
 ) : ViewModel() {
 
     // Listening state (true when app is listening)
@@ -40,6 +42,10 @@ class ListeningViewModel @Inject constructor(
     private val _emergencySound = MutableStateFlow<SoundDetectionResult?>(null)
     val emergencySound: StateFlow<SoundDetectionResult?> = _emergencySound.asStateFlow()
 
+    // Sync status
+    private val _syncStatus = MutableStateFlow<String?>(null)
+    val syncStatus: StateFlow<String?> = _syncStatus.asStateFlow()
+
     init {
         // Listen to audio data from recorder
         viewModelScope.launch {
@@ -51,7 +57,7 @@ class ListeningViewModel @Inject constructor(
 
                     // Classify the sound
                     android.util.Log.d("ListeningViewModel", "Classifying sound - RMS: %.4f".format(rms))
-                    processAudioChunk(it)
+                    processAudioChunk(it, rms)
                 }
             }
         }
@@ -72,14 +78,29 @@ class ListeningViewModel @Inject constructor(
     }
 
     // Process audio chunk with sound classifier
-    // Process audio chunk with sound classifier
-    private suspend fun processAudioChunk(audioChunk: FloatArray) {
+    private suspend fun processAudioChunk(audioChunk: FloatArray, rmsLevel: Double) {
         try {
             val result = soundClassifier.classifySound(audioChunk)
             _lastDetectedSound.value = result
 
             // Check if emergency sound detected
-            if (soundClassifier.isEmergencySound(result.label)) {
+            val isEmergency = soundClassifier.isEmergencySound(result.label)
+
+            // Save to database automatically
+            viewModelScope.launch {
+                try {
+                    val eventId = repository.saveEvent(
+                        result = result,
+                        rmsLevel = rmsLevel,
+                        isEmergency = isEmergency
+                    )
+                    android.util.Log.d("ListeningViewModel", "Saved event #$eventId to database")
+                } catch (e: Exception) {
+                    android.util.Log.e("ListeningViewModel", "Failed to save event: ${e.message}")
+                }
+            }
+
+            if (isEmergency) {
                 handleEmergencySound(result)
             }
         } catch (e: Exception) {
@@ -99,6 +120,39 @@ class ListeningViewModel @Inject constructor(
     // Dismiss emergency alert manually
     fun dismissEmergencyAlert() {
         _isEmergencyAlert.value = false
+    }
+
+    // Sync events to MongoDB
+    fun syncToMongoDB() {
+        viewModelScope.launch {
+            _syncStatus.value = "Syncing..."
+
+            val (successCount, failureCount) = repository.syncToMongoDB()
+
+            when {
+                failureCount == -1 -> {
+                    _syncStatus.value = "Network error - check connection"
+                }
+                failureCount > 0 -> {
+                    _syncStatus.value = "Synced $successCount, failed $failureCount"
+                }
+                successCount > 0 -> {
+                    _syncStatus.value = "Successfully synced $successCount events!"
+                }
+                else -> {
+                    _syncStatus.value = "No events to sync"
+                }
+            }
+
+            // Clear status after 3 seconds
+            kotlinx.coroutines.delay(3000)
+            _syncStatus.value = null
+        }
+    }
+
+    // Get unsynced events count
+    suspend fun getUnsyncedCount(): Int {
+        return repository.getUnsyncedCount()
     }
 
     // Calculate RMS (Root Mean Square) for audio level

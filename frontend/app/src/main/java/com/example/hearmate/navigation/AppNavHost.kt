@@ -39,11 +39,12 @@ fun AppNavHost(
         }
 
         composable(route = AppDestinations.SETTINGS_ROUTE) {
+            val viewModel: ListeningViewModel = hiltViewModel()
             SettingsScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
+
     }
 }

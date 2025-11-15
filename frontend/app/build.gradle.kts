@@ -45,17 +45,15 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
 }
 
 dependencies {
 
     // Core TensorFlow Lite runtime
-    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite:2.16.1")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-task-audio:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
 
     // Core Android
     implementation(libs.androidx.core.ktx)
@@ -83,6 +81,7 @@ dependencies {
     // Network
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Hilt
     implementation(libs.hilt.android)

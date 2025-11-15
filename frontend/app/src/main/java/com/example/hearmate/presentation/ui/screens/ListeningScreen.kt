@@ -17,8 +17,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.hearmate.core.audio.SoundDetectionResult
 import com.example.hearmate.presentation.viewmodel.ListeningViewModel
+import com.example.hearmate.core.audio.SoundDetectionResult
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+
 import kotlinx.coroutines.delay
 
 
