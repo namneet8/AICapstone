@@ -1,13 +1,8 @@
 package com.example.hearmate.core.di
 
-import EricTrainedModel
-import NameetTrainedModel
 import android.content.Context
-import com.example.hearmate.core.audio.MockSoundClassifier
-import com.example.hearmate.core.audio.SoundClassifier
-import com.example.hearmate.core.audio.YamnetSoundClassifier
-import VineetTrainedModel
-import MattiaTrainedModel
+import com.example.hearmate.core.classifier.VineetTrainedModel
+import com.example.hearmate.core.interfaces.SoundClassifier
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,36 +10,38 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Hilt Dependency Injection Module for application-wide dependencies.
+ *
+ * Purpose:
+ * --------
+ * Provides singleton instances of core app components that are shared
+ * across the entire application lifecycle.
+ *
+ * Currently Provides:
+ * - SoundClassifier: The TFLite model for audio classification
+ *
+ * Note: AudioRecorderManager and SoundEventRepository are @Singleton
+ * classes with @Inject constructors, so Hilt provides them automatically.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // Model selection: MOCK, YAMNET, or TRAINED
-    private enum class ModelType {
-        MOCK,
-        YAMNET,
-        NAMEET_TRAINED,
-        ERIC_TRAINED,
-        VINEET_TRAINED,
-
-        MATTIA_TRAINED
-    }
-
-    private val SELECTED_MODEL = ModelType.MATTIA_TRAINED  // model selected
-
+    /**
+     * Provides the sound classifier implementation.
+     *
+     * The classifier uses a custom TFLite model (VineetTrainedModel) that
+     * detects emergency sounds like sirens, gunshots, glass breaking, etc.
+     *
+     * @param context Application context (needed to load model from assets)
+     * @return SoundClassifier singleton instance
+     */
     @Provides
     @Singleton
     fun provideSoundClassifier(
         @ApplicationContext context: Context
     ): SoundClassifier {
-        return when (SELECTED_MODEL) {
-            ModelType.ERIC_TRAINED -> EricTrainedModel(context)
-            ModelType.YAMNET -> YamnetSoundClassifier(context)
-            ModelType.NAMEET_TRAINED -> NameetTrainedModel(context)
-            ModelType.MOCK -> MockSoundClassifier()
-            ModelType.VINEET_TRAINED -> VineetTrainedModel(context)
-            ModelType.MATTIA_TRAINED -> MattiaTrainedModel(context)
-
-        }
+        return VineetTrainedModel(context)
     }
 }

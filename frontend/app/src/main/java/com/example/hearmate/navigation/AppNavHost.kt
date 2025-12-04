@@ -13,6 +13,9 @@ import com.example.hearmate.presentation.viewmodel.ListeningViewModel
 /**
  * Composable that sets up the main navigation graph for the application.
  *
+ * The ListeningViewModel is scoped to the NavGraph, ensuring it's shared
+ * between all screens and survives navigation changes.
+ *
  * @param navController The NavController used for navigation.
  * @param modifier Modifier to be applied to the NavHost.
  * @param startDestination The route for the start destination of this NavHost.
@@ -23,15 +26,17 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = AppDestinations.LISTENING_ROUTE
 ) {
+    val sharedViewModel: ListeningViewModel = hiltViewModel()
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
         composable(route = AppDestinations.LISTENING_ROUTE) {
-            val viewModel: ListeningViewModel = hiltViewModel()
+            // Use the shared ViewModel
             ListeningScreen(
-                viewModel = viewModel,
+                viewModel = sharedViewModel,
                 onSettingsClick = {
                     navController.navigate(AppDestinations.SETTINGS_ROUTE)
                 }
@@ -39,12 +44,11 @@ fun AppNavHost(
         }
 
         composable(route = AppDestinations.SETTINGS_ROUTE) {
-            val viewModel: ListeningViewModel = hiltViewModel()
+            // Use the same shared ViewModel
             SettingsScreen(
-                viewModel = viewModel,
+                viewModel = sharedViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-
     }
 }

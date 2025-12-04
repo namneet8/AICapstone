@@ -1,169 +1,202 @@
 package com.example.hearmate.presentation.viewmodel
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.hearmate.core.audio.AudioRecorderManager
-import com.example.hearmate.core.audio.SoundClassifier
-import com.example.hearmate.core.audio.SoundDetectionResult
-import com.example.hearmate.data.repository.SoundEventRepository
+import com.example.hearmate.core.service.ServiceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.sqrt
 
+/**
+ * ViewModel for the ListeningScreen UI.
+ *
+ * Architecture Overview:
+ * ----------------------
+ * This ViewModel acts as a thin layer between the UI (ListeningScreen) and the
+ * ServiceManager. It proxies service state to the UI and manages user preferences.
+ *
+ * Responsibilities:
+ * - Proxy service states (listening, paused, timer) to UI via StateFlows
+ * - Manage vibration preferences for each emergency sound type
+ * - Delegate start/stop/pause/resume actions to ServiceManager
+ *
+ * Note: All pause/timer logic is handled by ListeningService.
+ * This ViewModel does NOT own any audio or detection logic.
+ */
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class ListeningViewModel @Inject constructor(
-    private val audioRecorderManager: AudioRecorderManager,
-    private val soundClassifier: SoundClassifier,
-    val repository: SoundEventRepository  // Exposed for SettingsScreen
+    private val serviceManager: ServiceManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    // Listening state (true when app is listening)
-    val isListening: StateFlow<Boolean> = audioRecorderManager.isListening
+    companion object {
+        private const val TAG = "ListeningViewModel"
+        private const val PREFS_NAME = "hearmate_vibration_prefs"
 
-    // Recording state (true only when recording 2 seconds after threshold)
-    val isThresholdTriggered: StateFlow<Boolean> = audioRecorderManager.isRecording
-
-    // Last detected sound
-    private val _lastDetectedSound = MutableStateFlow<SoundDetectionResult?>(null)
-    val lastDetectedSound: StateFlow<SoundDetectionResult?> = _lastDetectedSound.asStateFlow()
-
-    // Current RMS level for UI
-    private val _currentRMSLevel = MutableStateFlow(0.0)
-    val currentRMSLevel: StateFlow<Double> = _currentRMSLevel.asStateFlow()
-
-    // Emergency alert (triggers red flashing screen)
-    private val _isEmergencyAlert = MutableStateFlow(false)
-    val isEmergencyAlert: StateFlow<Boolean> = _isEmergencyAlert.asStateFlow()
-
-    private val _emergencySound = MutableStateFlow<SoundDetectionResult?>(null)
-    val emergencySound: StateFlow<SoundDetectionResult?> = _emergencySound.asStateFlow()
-
-    // Sync status
-    private val _syncStatus = MutableStateFlow<String?>(null)
-    val syncStatus: StateFlow<String?> = _syncStatus.asStateFlow()
-
-    init {
-        // Listen to audio data from recorder
-        viewModelScope.launch {
-            audioRecorderManager.audioData.collect { audioData ->
-                audioData?.let {
-                    // Calculate RMS for display
-                    val rms = calculateRMS(it)
-                    _currentRMSLevel.value = rms
-
-                    // Classify the sound
-                    android.util.Log.d("ListeningViewModel", "Classifying sound - RMS: %.4f".format(rms))
-                    processAudioChunk(it, rms)
-                }
-            }
-        }
+        /**
+         * List of emergency sounds the app can detect.
+         * These labels must match the TFLite model's output labels exactly.
+         */
+        private val EMERGENCY_SOUNDS = listOf(
+            "Alarm_Clock",
+            "Car_Horn",
+            "Glass_Breaking",
+            "Gunshot",
+            "Siren"
+        )
     }
 
-    // Start audio recording
+    // ========================================
+    // Vibration Preferences
+    // ========================================
+
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    // Map of sound label -> vibration enabled (true/false)
+    private val _vibrationPreferences = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val vibrationPreferences: StateFlow<Map<String, Boolean>> = _vibrationPreferences.asStateFlow()
+
+    // ========================================
+    // Service State (Proxied from ServiceManager)
+    // ========================================
+
+    /** Whether audio is actively being recorded and classified */
+    val isListening: StateFlow<Boolean> = serviceManager.isListening
+
+    /** Whether user has turned the listening toggle ON (may still be paused) */
+    val isListeningEnabled: StateFlow<Boolean> = serviceManager.isListeningEnabled
+
+    /** Whether monitoring is temporarily paused */
+    val isPaused: StateFlow<Boolean> = serviceManager.isPaused
+
+    /** Seconds remaining until pause auto-expires */
+    val pauseTimeRemaining: StateFlow<Long> = serviceManager.pauseTimeRemaining
+
+    // ========================================
+    // Initialization
+    // ========================================
+
+    init {
+        loadVibrationPreferences()
+        // Bind to service to sync current state (service may already be running)
+        serviceManager.bind()
+    }
+
+    /**
+     * Loads saved vibration preferences from SharedPreferences.
+     * Defaults to enabled (true) for all sounds if not previously set.
+     */
+    private fun loadVibrationPreferences() {
+        val prefs = EMERGENCY_SOUNDS.associateWith { sound ->
+            sharedPreferences.getBoolean(sound, true) // Default: vibration ON
+        }
+        _vibrationPreferences.value = prefs
+    }
+
+    // ========================================
+    // Public API - Settings
+    // ========================================
+
+    /**
+     * Returns list of all detectable emergency sound labels.
+     * Used by SettingsScreen to display vibration toggles.
+     */
+    fun getEmergencySounds(): List<String> = EMERGENCY_SOUNDS
+
+    /**
+     * Updates vibration preference for a specific sound type.
+     *
+     * @param soundLabel The sound label (e.g., "Siren", "Gunshot")
+     * @param enabled Whether to vibrate when this sound is detected
+     */
+    fun setVibrationEnabled(soundLabel: String, enabled: Boolean) {
+        // Persist to SharedPreferences
+        sharedPreferences.edit { putBoolean(soundLabel, enabled) }
+
+        // Update in-memory state
+        _vibrationPreferences.value = _vibrationPreferences.value.toMutableMap().apply {
+            this[soundLabel] = enabled
+        }
+
+        Log.d(TAG, "Vibration for $soundLabel set to $enabled")
+    }
+
+    // ========================================
+    // Public API - Listening Control
+    // ========================================
+
+    /**
+     * Starts audio monitoring (turns toggle ON).
+     *
+     * Flow:
+     * 1. Starts the foreground service if not running
+     * 2. Binds to service for state updates
+     * 3. Enables audio recording and classification
+     *
+     * @return true if started successfully, false if permission denied
+     *
+     * Note: RECORD_AUDIO permission must be checked at UI layer before calling.
+     */
+    @SuppressLint("MissingPermission")
     fun startListening(): Boolean {
         return try {
-            audioRecorderManager.startRecording()
+            serviceManager.startAndBind()
+            serviceManager.enableListening()
+            Log.d(TAG, "Started listening via ServiceManager")
+            true
         } catch (e: SecurityException) {
+            Log.e(TAG, "Permission denied: ${e.message}")
             false
         }
     }
 
-    // Stop audio recording
+    /**
+     * Stops audio monitoring completely (turns toggle OFF).
+     * Also clears any active pause state.
+     */
     fun stopListening() {
-        audioRecorderManager.stopRecording()
+        serviceManager.disableListening()
+        Log.d(TAG, "Stopped listening via ServiceManager")
     }
 
-    // Process audio chunk with sound classifier
-    private suspend fun processAudioChunk(audioChunk: FloatArray, rmsLevel: Double) {
-        try {
-            val result = soundClassifier.classifySound(audioChunk)
-            _lastDetectedSound.value = result
-
-            // Check if emergency sound detected
-            val isEmergency = soundClassifier.isEmergencySound(result.label)
-
-            // Save to database automatically
-            viewModelScope.launch {
-                try {
-                    val eventId = repository.saveEvent(
-                        result = result,
-                        rmsLevel = rmsLevel,
-                        isEmergency = isEmergency
-                    )
-                    android.util.Log.d("ListeningViewModel", "Saved event #$eventId to database")
-                } catch (e: Exception) {
-                    android.util.Log.e("ListeningViewModel", "Failed to save event: ${e.message}")
-                }
-            }
-
-            if (isEmergency) {
-                handleEmergencySound(result)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    /**
+     * Temporarily pauses monitoring for the specified duration.
+     * Service will auto-resume when timer expires.
+     *
+     * @param durationMinutes How long to pause (in minutes)
+     */
+    fun pauseListening(durationMinutes: Int) {
+        serviceManager.pauseListening(durationMinutes)
+        Log.d(TAG, "Paused for $durationMinutes minutes")
     }
 
-    // Handle emergency sound detection
-    private fun handleEmergencySound(result: SoundDetectionResult) {
-        android.util.Log.e("ListeningViewModel", "DETECTED EMERGENCY: ${result.label} (${result.confidence * 100}%)")
-        _emergencySound.value = result
-
-        // Trigger red flashing alert
-        _isEmergencyAlert.value = true
+    /**
+     * Resumes monitoring immediately (cancels remaining pause time).
+     */
+    @SuppressLint("MissingPermission")
+    fun resumeListening() {
+        serviceManager.resumeListening()
+        Log.d(TAG, "Resumed listening")
     }
 
-    // Dismiss emergency alert manually
-    fun dismissEmergencyAlert() {
-        _isEmergencyAlert.value = false
-    }
-
-    // Sync events to MongoDB
-    fun syncToMongoDB() {
-        viewModelScope.launch {
-            _syncStatus.value = "Syncing..."
-
-            val (successCount, failureCount) = repository.syncToMongoDB()
-
-            when {
-                failureCount == -1 -> {
-                    _syncStatus.value = "Network error - check connection"
-                }
-                failureCount > 0 -> {
-                    _syncStatus.value = "Synced $successCount, failed $failureCount"
-                }
-                successCount > 0 -> {
-                    _syncStatus.value = "Successfully synced $successCount events!"
-                }
-                else -> {
-                    _syncStatus.value = "No events to sync"
-                }
-            }
-
-            // Clear status after 3 seconds
-            kotlinx.coroutines.delay(3000)
-            _syncStatus.value = null
-        }
-    }
-
-    // Get unsynced events count
-    suspend fun getUnsyncedCount(): Int {
-        return repository.getUnsyncedCount()
-    }
-
-    // Calculate RMS (Root Mean Square) for audio level
-    private fun calculateRMS(buffer: FloatArray): Double {
-        if (buffer.isEmpty()) return 0.0
-        val sumSquares = buffer.sumOf { (it * it).toDouble() }
-        return sqrt(sumSquares / buffer.size)
-    }
+    // ========================================
+    // Lifecycle
+    // ========================================
 
     override fun onCleared() {
         super.onCleared()
-        audioRecorderManager.onDestroy()
+        // Don't unbind here - MainActivity manages service lifecycle.
+        // Service should keep running even after ViewModel is destroyed.
     }
 }

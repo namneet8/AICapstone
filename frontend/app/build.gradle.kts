@@ -55,6 +55,8 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-task-audio:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
 
+
+
     // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -83,6 +85,11 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // WorkManager for periodic background sync
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.hilt:hilt-work:1.1.0")
+    ksp("androidx.hilt:hilt-compiler:1.1.0")
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler) // KSP instead of kapt
@@ -98,10 +105,13 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Testing
-    testImplementation(libs.junit)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    testImplementation("junit:junit:4.13.2")
 }

@@ -3,7 +3,7 @@ package com.example.hearmate.data.repository
 import android.util.Log
 import com.example.hearmate.data.local.dao.SoundEventDao
 import com.example.hearmate.data.local.entity.SoundEventEntity
-import com.example.hearmate.core.audio.SoundDetectionResult
+import com.example.hearmate.core.interfaces.SoundDetectionResult
 import com.example.hearmate.data.remote.ApiService
 import com.example.hearmate.data.remote.model.SoundEventDto
 import com.example.hearmate.data.remote.model.SoundEventUploadRequest

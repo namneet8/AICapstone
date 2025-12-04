@@ -2,17 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Basic permissions -->
+    <!-- ==================== AUDIO & SERVICE PERMISSIONS ==================== -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
         tools:ignore="ForegroundServicesPolicy" />
-
-    <!-- Required for foregroundServiceType="microphone" -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-
-    <!-- Wake lock for background listening -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- ==================== LOCK SCREEN ALERT PERMISSIONS ==================== -->
+    <!-- Required for showing fullscreen alerts over lock screen -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"
+        tools:ignore="FullScreenIntentPolicy" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- ==================== OTHER PERMISSIONS ==================== -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".HearMateApplication"
@@ -27,6 +34,7 @@
         tools:targetApi="31"
         android:networkSecurityConfig="@xml/network_security_config">
 
+        <!-- ==================== MAIN ACTIVITY ==================== -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -37,13 +45,46 @@
             </intent-filter>
         </activity>
 
-        <!-- Optional: Background service for continuous listening -->
+        <!-- ==================== EMERGENCY ALERT ACTIVITY ==================== -->
+        <!--
+            This activity shows fullscreen alerts OVER the lock screen.
+            Key attributes:
+            - showWhenLocked: Displays over lock screen
+            - turnScreenOn: Wakes up the screen
+            - excludeFromRecents: Doesn't appear in recent apps
+        -->
+        <activity
+            android:name=".presentation.ui.activities.EmergencyAlertActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HearMate"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop" />
 
+        <!-- ==================== FOREGROUND SERVICE ==================== -->
+        <!--
+            Background service for continuous audio monitoring.
+            foregroundServiceType="microphone" is REQUIRED for audio access.
+        -->
         <service
             android:name=".core.service.ListeningService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+
+        <!-- ==================== WORKMANAGER CONFIG ==================== -->
+        <!-- Disable automatic WorkManager initialization -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
     </application>
 
