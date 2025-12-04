@@ -28,6 +28,10 @@
 <img width="1295" height="971" alt="image" src="https://github.com/user-attachments/assets/a286f8d1-707d-4446-a857-6be8657bd763" />
 
 ##
+<h2 align="center">Context Diagram</h1>
+<img width="538" height="1137" alt="image" src="https://github.com/user-attachments/assets/0b44333f-28e2-4f6e-9293-364dea900769" />
+
+##
 <br><br>
 <img width="1609" height="839" alt="image" src="https://github.com/user-attachments/assets/ef814775-ccfa-4e47-a69e-f1397d891fa4" />
 <br><br>
