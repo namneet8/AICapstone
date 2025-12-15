@@ -1,3 +1,23 @@
+# HearMate
+
+An Android app that helps hearing-impaired users detect emergency sounds in real-time using on-device machine learning.
+
+## About This Project
+
+This application was developed as an AI Engineering capstone project at Centennial College by a team of 5 members.
+
+**My contributions:**
+
+- Developed the entire Android mobile application (Kotlin, MVVM architecture)
+- Implemented foreground service for continuous audio monitoring
+- Integrated TensorFlow Lite model for on-device inference
+- Built the audio processing pipeline
+- Collaborated on transfer learning implementation with YAMNet
+
+Original team repository: [AICapstone](https://github.com/namneet8/AICapstone)
+
+---
+
 # Setup Instructions
 
 ## Prerequisites
